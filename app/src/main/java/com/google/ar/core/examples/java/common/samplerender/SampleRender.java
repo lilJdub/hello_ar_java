@@ -26,7 +26,6 @@ public class SampleRender {
   private static final String TAG = SampleRender.class.getSimpleName();
 
   private final AssetManager assetManager;
-
   private int viewportWidth = 1;
   private int viewportHeight = 1;
 
@@ -35,6 +34,7 @@ public class SampleRender {
    *
    * @param glSurfaceView Android GLSurfaceView
    * @param renderer Renderer implementation to receive callbacks
+   //renderer:responsible for making OpenGL calls to render a frame.
    * @param assetManager AssetManager for loading Android resources
    */
   public SampleRender(GLSurfaceView glSurfaceView, Renderer renderer, AssetManager assetManager) {
@@ -56,7 +56,7 @@ public class SampleRender {
             viewportWidth = w;
             viewportHeight = h;
             renderer.onSurfaceChanged(SampleRender.this, w, h);
-          }
+        }
 
           @Override
           public void onDrawFrame(GL10 gl) {

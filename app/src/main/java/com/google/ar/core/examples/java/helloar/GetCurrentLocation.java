@@ -33,7 +33,7 @@ import androidx.core.app.ActivityCompat;
 public class GetCurrentLocation extends Activity
         implements OnClickListener {
 
-    private LocationManager locationMangaer = null;
+    private LocationManager locationManager = null;
     private LocationListener locationListener = null;
 
     private Button btnGetLocation = null;
@@ -61,7 +61,7 @@ public class GetCurrentLocation extends Activity
         btnGetLocation = (Button) findViewById(R.id.btnLocation);
         btnGetLocation.setOnClickListener(this);
 
-        locationMangaer = (LocationManager)
+        locationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
 
     }
@@ -89,7 +89,7 @@ public class GetCurrentLocation extends Activity
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            locationMangaer.requestLocationUpdates(LocationManager
+            locationManager.requestLocationUpdates(LocationManager
                     .GPS_PROVIDER, 5000, 10, locationListener);
 
         } else {

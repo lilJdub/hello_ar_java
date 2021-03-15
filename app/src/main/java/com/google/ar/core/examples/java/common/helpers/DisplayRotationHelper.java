@@ -33,7 +33,7 @@ import com.google.ar.core.Session;
  * events.
  */
 public final class DisplayRotationHelper implements DisplayListener {
-  private boolean viewportChanged;
+  private boolean viewportChanged;//是否切換直/橫向
   private int viewportWidth;
   private int viewportHeight;
   private final Display display;

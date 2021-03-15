@@ -27,8 +27,10 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -45,6 +47,7 @@ import com.google.ar.core.Plane;
 import com.google.ar.core.Point;
 import com.google.ar.core.Point.OrientationMode;
 import com.google.ar.core.PointCloud;
+import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingFailureReason;
@@ -78,6 +81,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -89,6 +93,11 @@ import java.util.List;
 public class HelloArActivity extends AppCompatActivity implements SampleRender.Renderer {
 
   private static final String TAG = HelloArActivity.class.getSimpleName();
+
+  //add
+  private TextView TextArea;
+  private Button Clean;
+
 
   private static final String SEARCHING_PLANE_MESSAGE = "Searching for surfaces...";
   private static final String WAITING_FOR_TAP_MESSAGE = "Tap on a surface to place an object.";
@@ -177,6 +186,13 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     surfaceView = findViewById(R.id.surfaceview);
+
+    //add
+
+    TextArea = findViewById(R.id.text);
+    Clean = findViewById(R.id.gp);
+    //Clean.setOnClickListener(v -> onCleanPressed());
+    Clean.setOnClickListener(v -> getPlane());
     displayRotationHelper = new DisplayRotationHelper(/*context=*/ this);
 
     // Set up touch listener.
@@ -215,6 +231,8 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     return false;
   }
 
+
+
   @Override
   protected void onDestroy() {
     if (session != null) {
@@ -222,6 +240,8 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
       // Review the API reference for important considerations before calling close() in apps with
       // more complicated lifecycle requirements:
       // https://developers.google.com/ar/reference/java/arcore/reference/com/google/ar/core/Session#close()
+
+
       session.close();
       session = null;
     }
@@ -282,6 +302,7 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     // Note that order matters - see the note in onPause(), the reverse applies here.
     try {
       configureSession();
+
       // To record a live camera session for later playback, call
       // `session.startRecording(recorderConfig)` at anytime. To playback a previously recorded AR
       // session instead of using the live camera feed, call
@@ -309,6 +330,11 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
       displayRotationHelper.onPause();
       surfaceView.onPause();
       session.pause();
+
+      //add
+
+
+      TextArea.invalidate();
     }
   }
 
@@ -432,6 +458,10 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
   public void onSurfaceChanged(SampleRender render, int width, int height) {
     displayRotationHelper.onSurfaceChanged(width, height);
     virtualSceneFramebuffer.resize(width, height);
+
+
+
+
   }
 
   @Override
@@ -461,12 +491,14 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     Frame frame;
     try {
       frame = session.update();
+
     } catch (CameraNotAvailableException e) {
       Log.e(TAG, "Camera not available during onDrawFrame", e);
       messageSnackbarHelper.showError(this, "Camera not available. Try restarting the app.");
       return;
     }
     Camera camera = frame.getCamera();
+
 
     // Update BackgroundRenderer state to match the depth settings.
     try {
@@ -511,9 +543,15 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     } else if (hasTrackingPlane()) {
       if (anchors.isEmpty()) {
         message = WAITING_FOR_TAP_MESSAGE;
+
+        //TextArea.setText("TAP TO ADD");
+
+
       }
     } else {
       message = SEARCHING_PLANE_MESSAGE;
+
+      //TextArea.setText("Finding Plane");
     }
     if (message == null) {
       messageSnackbarHelper.hide(this);
@@ -533,11 +571,10 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     if (camera.getTrackingState() == TrackingState.PAUSED) {
       return;
     }
-
     // -- Draw non-occluded virtual objects (planes, point cloud)
-
     // Get projection matrix.
     camera.getProjectionMatrix(projectionMatrix, 0, Z_NEAR, Z_FAR);
+
 
     // Get camera matrix and draw.
     camera.getViewMatrix(viewMatrix, 0);
@@ -552,6 +589,7 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
       Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
       pointCloudShader.setMat4("u_ModelViewProjection", modelViewProjectionMatrix);
       render.draw(pointCloudMesh, pointCloudShader);
+
     }
 
     // Visualize planes.
@@ -618,12 +656,17 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
           if (anchors.size() >= 20) {
             anchors.get(0).detach();
             anchors.remove(0);
+
           }
 
           // Adding an Anchor tells ARCore that it should track this position in
           // space. This anchor is created on the Plane to place the 3D model
           // in the correct position relative both to the world and to the plane.
           anchors.add(hit.createAnchor());
+          //add
+
+
+          //TextArea.setText("Anchors on screen: "+anchors.size());
           // For devices that support the Depth API, shows a dialog to suggest enabling
           // depth-based occlusion. This dialog needs to be spawned on the UI thread.
           this.runOnUiThread(this::showOcclusionDialogIfNeeded);
@@ -690,6 +733,7 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     // Shows the dialog to the user.
     Resources resources = getResources();
     if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
+
       // With depth support, the user can select visualization options.
       new AlertDialog.Builder(this)
           .setTitle(R.string.options_title_with_depth)
@@ -706,6 +750,9 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
               (DialogInterface dialog, int which) -> resetSettingsMenuDialogCheckboxes())
           .show();
     } else {
+      //add
+
+
       // Without depth support, no settings are available.
       new AlertDialog.Builder(this)
           .setTitle(R.string.options_title_without_depth)
@@ -764,6 +811,7 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
   private void updateMainLight(float[] direction, float[] intensity, float[] viewMatrix) {
     // We need the direction in a vec4 with 0.0 as the final component to transform it to view space
     worldLightDirection[0] = direction[0];
+
     worldLightDirection[1] = direction[1];
     worldLightDirection[2] = direction[2];
     Matrix.multiplyMV(viewLightDirection, 0, viewMatrix, 0, worldLightDirection, 0);
@@ -771,6 +819,8 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     virtualObjectShader.setVec3("u_LightIntensity", intensity);
   }
 
+
+  //球諧函數的係數更新 這部分我也不太理解
   private void updateSphericalHarmonicsCoefficients(float[] coefficients) {
     // Pre-multiply the spherical harmonics coefficients before passing them to the shader. The
     // constants in sphericalHarmonicFactors were derived from three terms:
@@ -797,6 +847,37 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     }
     virtualObjectShader.setVec3Array(
         "u_SphericalHarmonicsCoefficients", sphericalHarmonicsCoefficients);
+  }
+
+  //add
+  private synchronized void onCleanPressed() {
+//    for (int i=0;i < anchors.size();i++){
+//      anchors.get(i).detach();
+//      anchors.remove(i);
+//
+//    }
+    // Clear the anchor from the scene.
+
+
+
+    anchors.clear();
+    TextArea.setText("all clear");
+
+
+
+  }
+
+  public void getPlane(){
+    TextArea.setText("");
+      Collection<Plane> x = session.getAllTrackables(Plane.class);
+        for(Plane planes:x){
+          TextArea.append("\n"+"NewPlane");
+          Pose planePose = planes.getCenterPose();
+          float[] pp = planePose.getYAxis();
+          for (float elements:pp){
+            TextArea.append("\n"+elements+"NEXT");
+          }
+    }
   }
 
   /** Configures the session with feature settings. */

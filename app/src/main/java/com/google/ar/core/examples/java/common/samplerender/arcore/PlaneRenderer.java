@@ -319,6 +319,7 @@ public class PlaneRenderer {
     // Compute dot product of plane's normal with vector from camera to plane center.
     return (cameraX - planePose.tx()) * normal[0]
         + (cameraY - planePose.ty()) * normal[1]
+            //平面參數=Y軸的值
         + (cameraZ - planePose.tz()) * normal[2];
   }
 }
