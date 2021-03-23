@@ -25,7 +25,8 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".GetCurrentLocation"></activity>
+        <activity android:name=".Scanning_Central" />
+        <activity android:name=".GetCurrentLocation" />
         <activity android:name=".Navigation_Central" />
         <activity android:name=".GPS_Activity" />
         <activity android:name=".activity_homepage">

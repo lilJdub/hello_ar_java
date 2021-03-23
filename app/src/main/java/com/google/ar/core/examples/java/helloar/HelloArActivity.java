@@ -26,6 +26,7 @@ import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.MenuItem;
@@ -84,7 +85,6 @@ import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -111,6 +111,8 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
   private TextView TextArea;
   private Button Clean;
   private Button Get;
+
+  //geometry
 
 
   private static final String SEARCHING_PLANE_MESSAGE = "Searching for surfaces...";
@@ -140,6 +142,9 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
   private GLSurfaceView surfaceView;
 
   private boolean installRequested;
+
+  //Arraylist for saving the plane poses.
+  //session.getAll
 
   private Session session;
   private final SnackbarHelper messageSnackbarHelper = new SnackbarHelper();
@@ -206,9 +211,10 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     TextArea = findViewById(R.id.text);
     TextArea.setMovementMethod(ScrollingMovementMethod.getInstance());
 
-    Clean = findViewById(R.id.clean);
+    Clean = findViewById(R.id.ancloud);
     //Clean.setOnClickListener(v -> onCleanPressed());
-    Clean.setOnClickListener(v -> getPlane());
+    //Clean.setOnClickListener(v -> getPlanety());
+    Clean.setOnClickListener(v ->createTouchEvent() );
 
     Get = findViewById(R.id.get);
     Get.setOnClickListener(v -> getAttr());
@@ -649,6 +655,14 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     // Compose the virtual scene with the background.
     backgroundRenderer.drawVirtualScene(render, virtualSceneFramebuffer, Z_NEAR, Z_FAR);
   }
+  private void getPlanety(){
+    Collection<Plane> PlaneNow = session.getAllTrackables(Plane.class);
+    for(Plane pl:PlaneNow){
+      Pose pos=pl.getCenterPose();
+      float positionY = pos.ty();
+      TextArea.append("planeTY: "+positionY+"\n");
+    }
+  }
 
   // Handle only one tap per frame, as taps are usually low frequency compared to frame rate.
   private void handleTap(Frame frame, Camera camera) {
@@ -664,6 +678,7 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
       for (HitResult hit : hitResultList) {
         // If any plane, Oriented Point, or Instant Placement Point was hit, create an anchor.
         Trackable trackable = hit.getTrackable();
+
         // If a plane was hit, check that it was hit inside the plane polygon.
         if ((trackable instanceof Plane
                 && ((Plane) trackable).isPoseInPolygon(hit.getHitPose())
@@ -698,6 +713,21 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
           // Instant Placement Point.
           break;
         }
+      }
+    }
+  }
+  private void createTouchEvent(){
+    SurfaceView sfv = (SurfaceView) findViewById(R.id.surfaceview);
+    int w=sfv.getWidth();
+    int h=sfv.getHeight();
+    for(int width=0;width<=w;w++){
+      for(int height=0;height<=h;w++){
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis()+100;
+        int action = MotionEvent.ACTION_UP;
+        int metaState = 0;
+        MotionEvent event = MotionEvent.obtain(downTime, eventTime, action, width, height, metaState);
+        sfv.dispatchTouchEvent(event);
       }
     }
   }

@@ -31,7 +31,7 @@ public class activity_homepage extends Activity {
         });
     }
     public void openScan(){
-        Intent intent = new Intent(this, HelloArActivity.class);
+        Intent intent = new Intent(this, Scanning_Central.class);
         startActivity(intent);
     }
     public void openNaviCenter(){
