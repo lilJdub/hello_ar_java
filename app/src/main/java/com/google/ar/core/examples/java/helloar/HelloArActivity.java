@@ -243,6 +243,7 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
                 popup.show();
               }
             });
+    TextArea.setText("");
   }
 
   /** Menu button to launch feature specific settings. */
@@ -666,6 +667,7 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
 
   // Handle only one tap per frame, as taps are usually low frequency compared to frame rate.
   private void handleTap(Frame frame, Camera camera) {
+    int count=0;
     MotionEvent tap = tapHelper.poll();
     if (tap != null && camera.getTrackingState() == TrackingState.TRACKING) {
       List<HitResult> hitResultList;
@@ -689,10 +691,12 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
                 || (trackable instanceof InstantPlacementPoint)) {
           // Cap the number of objects created. This avoids overloading both the
           // rendering system and ARCore.
-          if (anchors.size() >= 20) {
+          if (anchors.size() >= 10) {
             anchors.get(0).detach();
+            count=count+1;
+            TextArea.append("Anchors no. "+count);
+            TextArea.append(anchors.get(0).getPose()+"\n");
             anchors.remove(0);
-
           }
 
           // Adding an Anchor tells ARCore that it should track this position in
@@ -720,8 +724,8 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
     SurfaceView sfv = (SurfaceView) findViewById(R.id.surfaceview);
     int w=sfv.getWidth();
     int h=sfv.getHeight();
-    for(int width=0;width<=w;w++){
-      for(int height=0;height<=h;w++){
+    for(int width=0;width<=w;width++){
+      for(int height=0;height<=h;height++){
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis()+100;
         int action = MotionEvent.ACTION_UP;
